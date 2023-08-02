@@ -1,30 +1,23 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using B_Q01;
 using B_Q01.BackgroundServices;
+using B_Q01.Data.Context;
+using B_Q01.Services;
+using B_Q01.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System.Collections.ObjectModel;
-using System.Net.Http.Headers;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 
-var builder = new HostBuilder();
+var builder = Host.CreateApplicationBuilder(args);
 
-builder.ConfigureServices(services =>
-    {
-        services.AddHostedService<NextDeparturesService>();
-        //services.AddHostedService<DepartureAlertService>();
+builder.Services.AddSingleton<ILiteDbContext, LiteDbContext>();
+builder.Services.AddTransient<ILiteDbDeparturesService, LiteDbDeparturesService>();
+builder.Services.AddHostedService<NextDeparturesService>();
+builder.Services.AddHostedService<DepartureAlertService>();
 
-        services.AddLogging();
-    });
-builder.ConfigureLogging(configLogging =>
-    {
-        configLogging.AddConsole();
-        configLogging.AddDebug();
-    });
+builder.Services.AddLogging();
 
-await builder.RunConsoleAsync();
+var host = builder.Build();
+
+host.Run();
 
 //List<Departure> tracking = new();
 

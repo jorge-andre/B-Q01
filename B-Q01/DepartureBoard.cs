@@ -1,52 +1,79 @@
-﻿using System.Globalization;
+﻿using B_Q01.Converters;
 using System.Text.Json.Serialization;
 
 namespace B_Q01
 {
-    public record class DepartureBoard(
-        [property: JsonPropertyName("Departure")] List<Departure> Departures);
-
-    public record class Departure(
-        [property: JsonPropertyName("type")] string Type,
-        [property: JsonPropertyName("line")] string Line,
-        [property: JsonPropertyName("stop")] string Stop,
-        [property: JsonPropertyName("direction")] string Direction,
-        [property: JsonPropertyName("time")] string Time,
-        [property: JsonPropertyName("rtTime")] string RealTime,
-        [property: JsonPropertyName("date")] string Date,
-        [property: JsonPropertyName("ref")] Uri DetailRef)
+    public class DepartureBoard 
     {
-        public DateTimeOffset TimeUtc
+        [property: JsonPropertyName("Departure")]
+        public List<Departure>? Departures { get; set; }
+    }
+
+    public class Departure 
+    {
+        public int Id { get; set; }
+
+        [property: JsonPropertyName("type")]
+        public string Type { get; set; }
+
+        [property: JsonPropertyName("line")]
+        public string Line { get; set; }
+
+        [property: JsonPropertyName("stop")]
+        public string Stop { get; set; }
+
+        [property: JsonPropertyName("direction")]
+        public string Direction { get; set; }
+
+        [property: JsonPropertyName("time")]
+        [JsonConverter(typeof(CustomTimeConverter))]
+        public DateTimeOffset Time { get; set; }
+
+        [property: JsonPropertyName("rtTime")]
+        [JsonConverter(typeof(CustomTimeConverter))]
+        public DateTimeOffset? RealTime { get; set; }
+
+        [property: JsonPropertyName("date")]
+        [JsonConverter(typeof(CustomDateConverter))]
+        public DateTimeOffset Date { get; set; }
+
+        [property: JsonPropertyName("realTimeTicks")]
+        public long RealTimeTicks
         {
             get
             {
-                var parsedDate = DateTime.ParseExact(String.Join(" ", Date, Time), "dd.MM.yy HH:mm", new CultureInfo("en-DK"));
-                return new DateTimeOffset(parsedDate);
+                return RealTime?.UtcTicks ?? Time.UtcTicks;
             }
         }
 
-        public DateTimeOffset RealTimeUtc
-        {
-            get
-            {
-                if (String.IsNullOrEmpty(RealTime))
-                    return TimeUtc;
-                var parsedDate = DateTime.ParseExact(String.Join(" ", Date, RealTime), "dd.MM.yy HH:mm", new CultureInfo("en-DK"));
-                return new DateTimeOffset(parsedDate);
-            }
-            set
-            {
-                RealTimeUtc = value;
-            }
-        }
-
+        [property: JsonPropertyName("scheduleOffset")]
         public TimeSpan ScheduleOffset
         {
             get
             {
-                return RealTimeUtc.Subtract(TimeUtc);
+                return RealTime?.Subtract(Time) ?? TimeSpan.Zero;
             }
         }
 
+        public override bool Equals(object? obj)
+        {
+            if (obj == null || !this.GetType().Equals(obj.GetType())) return false;
+            else
+            {
+                Departure other = (Departure)obj;
+                return Type.Equals(other.Type) &&
+                    Line.Equals(other.Line) &&
+                    Stop.Equals(other.Stop) &&
+                    Direction.Equals(other.Direction) &&
+                    Date.Equals(other.Date) &&
+                    Time.Equals(other.Time);
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            var stringToHash = string.Join("-", Type, Line, Stop, Direction, Date, Time);
+            return stringToHash.GetHashCode();
+        }
     }
 }
