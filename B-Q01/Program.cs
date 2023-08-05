@@ -5,15 +5,16 @@ using B_Q01.Services;
 using B_Q01.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 var builder = Host.CreateApplicationBuilder(args);
-
 builder.Services.AddSingleton<ILiteDbContext, LiteDbContext>();
 builder.Services.AddTransient<ILiteDbDeparturesService, LiteDbDeparturesService>();
 builder.Services.AddHostedService<NextDeparturesService>();
 builder.Services.AddHostedService<DepartureAlertService>();
 
 builder.Services.AddLogging();
+builder.Logging.AddConsole();
 
 var host = builder.Build();
 

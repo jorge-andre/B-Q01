@@ -58,7 +58,7 @@ namespace B_Q01.BackgroundServices
             var res = await client.GetStringAsync("http://xmlopen.rejseplanen.dk/bin/rest.exe/departureBoard?id=2753&date=" + dateString + "&offsetTime=0&format=json");
             if (res == null || res.Equals(string.Empty))
             {
-                Console.WriteLine("API response null");
+                logger.LogWarning("API response null");
                 return;
             }
             var board = JsonNode.Parse(res)?["DepartureBoard"]?["Departure"]?.ToString();
@@ -71,6 +71,9 @@ namespace B_Q01.BackgroundServices
             {
                 departuresService.AddOrUpdate(departure);
             }
+
+            var delCount = departuresService.DeletePastDepartures();
+            logger.LogInformation("Removed {count} past departures", delCount);
         }
     }
 }

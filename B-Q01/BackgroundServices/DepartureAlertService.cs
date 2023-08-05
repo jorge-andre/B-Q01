@@ -41,7 +41,7 @@ namespace B_Q01.BackgroundServices
             using var scope = scopeFactory.CreateScope();
             var departuresService = scope.ServiceProvider.GetRequiredService<ILiteDbDeparturesService>();
 
-            var nextDeparture = departuresService.GetAll().OrderBy(dep => dep.RealTime).FirstOrDefault();
+            var nextDeparture = departuresService.FindNext().FirstOrDefault();
             if (nextDeparture == null)
             {
                 Console.WriteLine("No arriving buses found");
@@ -65,7 +65,7 @@ namespace B_Q01.BackgroundServices
                 TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time"));
             var supposedDep = TimeZoneInfo.ConvertTime(nextDeparture.Time,
                 TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time"));
-            Console.WriteLine($"Line: {nextDeparture.Line} / Direction: {nextDeparture.Direction} / Arrival: {departureTime}, in {arrival.Minutes} minutes / Supposed Arrival: {nextDeparture.Time}");
+            Console.WriteLine($"Line: {nextDeparture.Line} / Direction: {nextDeparture.Direction} / Arrival: {departureTime}, in {arrival.Minutes} minutes / Supposed Arrival: {supposedDep}");
         }
     }
 }

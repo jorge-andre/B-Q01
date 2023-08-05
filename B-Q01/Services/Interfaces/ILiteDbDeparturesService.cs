@@ -3,6 +3,9 @@
     public interface ILiteDbDeparturesService
     {
         public IList<Departure> GetAll();
-        public int AddOrUpdate(Departure departure);
+        public bool AddOrUpdate(Departure departure);
+        public List<Departure> FindNext(int quantity = 1);
+        public bool Delete(int id);
+        public int DeletePastDepartures();
     }
 }
