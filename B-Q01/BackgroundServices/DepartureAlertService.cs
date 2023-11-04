@@ -1,19 +1,27 @@
-﻿using B_Q01.Services.Interfaces;
+﻿using B_Q01.Kafka;
+using B_Q01.Services.Interfaces;
+using Confluent.Kafka;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace B_Q01.BackgroundServices
 {
     public class DepartureAlertService : BackgroundService
     {
+        private readonly string topic;
+        private readonly KafkaDependentProducer producer;
         private readonly IServiceScopeFactory scopeFactory;
         private readonly ILogger<DepartureAlertService> logger;
 
         public DepartureAlertService(
+            KafkaDependentProducer producer,
             IServiceScopeFactory scopeFactory,
             ILogger<DepartureAlertService> logger)
         {
+            this.producer = producer;
+            this.topic = "departures";
             this.scopeFactory = scopeFactory;
             this.logger = logger;
         }
@@ -47,25 +55,24 @@ namespace B_Q01.BackgroundServices
                 Console.WriteLine("No arriving buses found");
                 return;
             }
-            TimeSpan arrival = nextDeparture.RealTime?.Subtract(DateTime.UtcNow) ?? nextDeparture.Time.Subtract(DateTime.UtcNow);
-
-            switch (arrival.Minutes)
+            var message = new Message<string, string>
             {
-                case < 5:
-                    Console.WriteLine("Bus about to arrive");
-                    break;
-                case < 10:
-                    Console.WriteLine("Bus arriving soon");
-                    break;
-                default:
-                    Console.WriteLine("Some time until bus");
-                    break;
-            }
-            var departureTime = TimeZoneInfo.ConvertTime(nextDeparture.RealTime ?? nextDeparture.Time,
-                TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time"));
-            var supposedDep = TimeZoneInfo.ConvertTime(nextDeparture.Time,
-                TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time"));
-            Console.WriteLine($"Line: {nextDeparture.Line} / Direction: {nextDeparture.Direction} / Arrival: {departureTime}, in {arrival.Minutes} minutes / Supposed Arrival: {supposedDep}");
+                Key = nextDeparture.Stop,
+                Value = JsonSerializer.Serialize(nextDeparture)
+            };
+
+
+            var result = await producer.ProduceAsync(topic, message);
+            Console.WriteLine(result.ToString());
+
+            //TimeSpan timeToArrival = nextDeparture.RealTime?.Subtract(DateTime.UtcNow) ?? nextDeparture.Time.Subtract(DateTime.UtcNow);
+
+
+            //var departureTime = TimeZoneInfo.ConvertTime(nextDeparture.RealTime ?? nextDeparture.Time,
+            //    TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time"));
+            //var supposedDep = TimeZoneInfo.ConvertTime(nextDeparture.Time,
+            //    TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time"));
+            //Console.WriteLine($"Line: {nextDeparture.Line} / Direction: {nextDeparture.Direction} / Arrival: {departureTime}, in {timeToArrival.Minutes} minutes / Supposed Arrival: {supposedDep}");
         }
     }
 }

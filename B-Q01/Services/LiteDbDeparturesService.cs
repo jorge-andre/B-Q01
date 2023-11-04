@@ -38,7 +38,7 @@ namespace B_Q01.Services
                 departure.Id = dep.Id;
                 return col.Update(departure);
             }
-            logger.LogInformation("Addind new departure");
+            logger.LogInformation("Adding new departure");
             return col.Insert(departure).IsNumber;
         }
 
@@ -47,7 +47,7 @@ namespace B_Q01.Services
             var items = db.GetCollection<Departure>("Departure").Query();
             var ticksNow = DateTime.UtcNow.Ticks;
 
-            return items.Where(x => x.RealTimeTicks >= ticksNow).OrderBy(x => x.RealTimeTicks).Offset(qnt).ToList();
+            return items.Where(x => x.RealTimeTicks > ticksNow).OrderBy(x => x.RealTimeTicks).Offset(qnt).ToList();
         }
 
         public bool Delete(int id)
@@ -59,7 +59,7 @@ namespace B_Q01.Services
         public int DeletePastDepartures()
         {
             var ticksNow = DateTime.UtcNow.Ticks;
-            return db.GetCollection<Departure>("Departure").DeleteMany(x => x.RealTimeTicks < ticksNow);
+            return db.GetCollection<Departure>("Departure").DeleteMany(x => x.RealTimeTicks <= ticksNow);
         }
     }
 }

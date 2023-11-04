@@ -26,7 +26,7 @@ namespace B_Q01.BackgroundServices
         {
             await DoWork();
 
-            using PeriodicTimer timer = new(TimeSpan.FromSeconds(30));
+            using PeriodicTimer timer = new(TimeSpan.FromSeconds(10));
             try
             {
                 while (await timer.WaitForNextTickAsync(cancellationToken))
