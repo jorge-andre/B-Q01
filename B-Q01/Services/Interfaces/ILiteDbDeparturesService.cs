@@ -7,6 +7,8 @@
         public List<Departure> FindNext(int quantity = 1);
         public bool DeleteDeparture(int id);
         public int DeletePastDepartures();
-        public TrackedStop AddTrackedStop(string stopName, int stopId)
+        public TrackedStop AddTrackedStop(string stopName, int stopId);
+        public TrackedStop GetTrackedStop(string stopName);
+        public List<TrackedStop> GetAllTrackedStops();
     }
 }

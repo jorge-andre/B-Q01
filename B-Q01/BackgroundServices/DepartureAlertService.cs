@@ -10,7 +10,6 @@ namespace B_Q01.BackgroundServices
 {
     public class DepartureAlertService : BackgroundService
     {
-        private readonly string topic;
         private readonly KafkaDependentProducer producer;
         private readonly IServiceScopeFactory scopeFactory;
         private readonly ILogger<DepartureAlertService> logger;
@@ -22,7 +21,6 @@ namespace B_Q01.BackgroundServices
             ILogger<DepartureAlertService> logger)
         {
             this.producer = producer;
-            this.topic = "departures";
             this.scopeFactory = scopeFactory;
             this.logger = logger;
         }
@@ -50,26 +48,35 @@ namespace B_Q01.BackgroundServices
             using var scope = scopeFactory.CreateScope();
             var departuresService = scope.ServiceProvider.GetRequiredService<ILiteDbDeparturesService>();
 
-            var nextDeparture = departuresService.FindNext().FirstOrDefault();
-            if (nextDeparture == null)
-            {
-                Console.WriteLine("No arriving buses found");
-                return;
-            }
-            if (nextDeparture.Equals(lastSentDeparture))
-            {
-                Console.WriteLine("No changes on next departure");
-                return;
-            }
-            var message = new Message<string, string>
-            {
-                Key = nextDeparture.Stop,
-                Value = JsonSerializer.Serialize(nextDeparture)
-            };
+            var stops = departuresService.GetAllTrackedStops();
 
-            var result = await producer.ProduceAsync(topic, message);
-            lastSentDeparture = nextDeparture;
-            Console.WriteLine(result.Value);
+            foreach (var stop in stops)
+            {
+                var nextDeparture = departuresService.FindNext(stop.StopId).FirstOrDefault();
+                if (nextDeparture == null)
+                {
+                    Console.WriteLine("No departures found");
+                    logger.LogInformation("No departures found");
+                    return;
+                }
+                if (nextDeparture.Equals(lastSentDeparture))
+                {
+                    Console.WriteLine("No changes on next departure");
+                    return;
+                }
+                var message = new Message<string, string>
+                {
+                    Key = nextDeparture.Stop,
+                    Value = JsonSerializer.Serialize(nextDeparture)
+                };
+
+                var topic = stop.KafkaTopic;
+
+                var result = await producer.ProduceAsync(topic, message);
+
+                lastSentDeparture = nextDeparture;
+                Console.WriteLine(result.Value);
+            }
         }
     }
 }

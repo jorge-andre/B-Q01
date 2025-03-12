@@ -16,9 +16,9 @@ namespace B_Q01.Controllers
         [HttpPost]
         public async Task<string> TrackStationTopic(string stopName, int stopId)
         {
-            departuresService.AddTrackedStop(stopName, stopId);
+            var stop = departuresService.AddTrackedStop(stopName, stopId);
 
-            return "Corresponding kafka topic";
+            return stop.KafkaTopic;
         }
     }
 }

@@ -42,12 +42,12 @@ namespace B_Q01.Services
             return col.Insert(departure).IsNumber;
         }
 
-        public List<Departure> FindNext(int qnt = 1)
+        public List<Departure> FindNext(int stopId, int qnt = 1)
         {
             var items = db.GetCollection<Departure>("Departure").Query();
             var ticksNow = DateTime.UtcNow.Ticks;
 
-            return items.Where(x => x.RealTimeTicks > ticksNow).OrderBy(x => x.RealTimeTicks).Offset(qnt).ToList();
+            return items.Where(x => x.RealTimeTicks > ticksNow && x.Id == stopId).OrderBy(x => x.RealTimeTicks).Offset(qnt).ToList();
         }
 
         public bool DeleteDeparture(int id)
@@ -77,6 +77,16 @@ namespace B_Q01.Services
             col.Insert(newStop);
             logger.LogInformation("Added new tracked stop, ID: {id}", newStop.StopId);
             return newStop;
+        }
+
+        public List<TrackedStop> GetAllTrackedStops()
+        {
+            return db.GetCollection<TrackedStop>("TrackedStop").FindAll().ToList();
+        }
+
+        public TrackedStop GetTrackedStop(string stopName)
+        {
+            return db.GetCollection<TrackedStop>("TrackedStop").FindOne(x => x.StopName == stopName);
         }
     }
 }
