@@ -55,6 +55,8 @@ namespace B_Q01.BackgroundServices
                 TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time"));
             var dateString = string.Join(".", currentDate.ToString("dd"), currentDate.ToString("MM"), currentDate.ToString("yy"));
 
+            var stopId = 0; //Get ID from stops table
+
             var res = await client.GetStringAsync("http://xmlopen.rejseplanen.dk/bin/rest.exe/departureBoard?id=2753&date=" + dateString + "&offsetTime=0&format=json");
             if (res == null || res.Equals(string.Empty))
             {
@@ -69,7 +71,7 @@ namespace B_Q01.BackgroundServices
 
             foreach (var departure in nextDepartures)
             {
-                departuresService.AddOrUpdate(departure);
+                departuresService.AddOrUpdateDeparture(departure);
             }
 
             var delCount = departuresService.DeletePastDepartures();

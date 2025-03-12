@@ -23,7 +23,7 @@ namespace B_Q01.Services
             return db.GetCollection<Departure>("Departure").FindAll().ToList();
         }
 
-        public bool AddOrUpdate(Departure departure)
+        public bool AddOrUpdateDeparture(Departure departure)
         {
             var col = db.GetCollection<Departure>("Departure");
             var dep = col.FindOne(x => x.Type == departure.Type
@@ -50,7 +50,7 @@ namespace B_Q01.Services
             return items.Where(x => x.RealTimeTicks > ticksNow).OrderBy(x => x.RealTimeTicks).Offset(qnt).ToList();
         }
 
-        public bool Delete(int id)
+        public bool DeleteDeparture(int id)
         {
             logger.LogInformation("Deleting departure ID: {id}", id);
             return db.GetCollection<Departure>("Departure").Delete(id);
@@ -60,6 +60,23 @@ namespace B_Q01.Services
         {
             var ticksNow = DateTime.UtcNow.Ticks;
             return db.GetCollection<Departure>("Departure").DeleteMany(x => x.RealTimeTicks <= ticksNow);
+        }
+
+        public TrackedStop AddTrackedStop(string stopName, int stopId)
+        {
+            var col = db.GetCollection<TrackedStop>("TrackedStop");
+            var stop = col.FindOne(x => x.StopName == stopName
+            && x.StopId == stopId);
+
+            if (stop != null)
+            {
+                logger.LogInformation("Stop already tracked, ID: {id}", stop.StopId);
+                return stop;
+            }
+            var newStop = new TrackedStop { StopName = stopName, StopId = stopId };
+            col.Insert(newStop);
+            logger.LogInformation("Added new tracked stop, ID: {id}", newStop.StopId);
+            return newStop;
         }
     }
 }
