@@ -14,6 +14,7 @@ namespace B_Q01.BackgroundServices
         private readonly KafkaDependentProducer producer;
         private readonly IServiceScopeFactory scopeFactory;
         private readonly ILogger<DepartureAlertService> logger;
+        private Departure? lastSentDeparture = null;
 
         public DepartureAlertService(
             KafkaDependentProducer producer,
@@ -55,24 +56,20 @@ namespace B_Q01.BackgroundServices
                 Console.WriteLine("No arriving buses found");
                 return;
             }
+            if (nextDeparture.Equals(lastSentDeparture))
+            {
+                Console.WriteLine("No changes on next departure");
+                return;
+            }
             var message = new Message<string, string>
             {
                 Key = nextDeparture.Stop,
                 Value = JsonSerializer.Serialize(nextDeparture)
             };
 
-
             var result = await producer.ProduceAsync(topic, message);
-            Console.WriteLine(result.ToString());
-
-            //TimeSpan timeToArrival = nextDeparture.RealTime?.Subtract(DateTime.UtcNow) ?? nextDeparture.Time.Subtract(DateTime.UtcNow);
-
-
-            //var departureTime = TimeZoneInfo.ConvertTime(nextDeparture.RealTime ?? nextDeparture.Time,
-            //    TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time"));
-            //var supposedDep = TimeZoneInfo.ConvertTime(nextDeparture.Time,
-            //    TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time"));
-            //Console.WriteLine($"Line: {nextDeparture.Line} / Direction: {nextDeparture.Direction} / Arrival: {departureTime}, in {timeToArrival.Minutes} minutes / Supposed Arrival: {supposedDep}");
+            lastSentDeparture = nextDeparture;
+            Console.WriteLine(result.Value);
         }
     }
 }

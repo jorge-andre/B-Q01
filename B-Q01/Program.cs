@@ -16,7 +16,7 @@ builder.Services.AddSingleton<KafkaClientHandle>();
 builder.Services.AddSingleton<KafkaDependentProducer>();
 builder.Services.AddSingleton<ILiteDbContext, LiteDbContext>();
 builder.Services.AddTransient<ILiteDbDeparturesService, LiteDbDeparturesService>();
-builder.Services.AddHostedService<NextDeparturesService>();
+builder.Services.AddHostedService<CollectorService>();
 builder.Services.AddHostedService<DepartureAlertService>();
 
 builder.Services.AddLogging();

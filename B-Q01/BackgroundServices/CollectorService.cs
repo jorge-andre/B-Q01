@@ -9,14 +9,14 @@ using System.Text.Json.Nodes;
 namespace B_Q01.BackgroundServices
 {
 
-    public class NextDeparturesService : BackgroundService
+    public class CollectorService : BackgroundService
     {
         private readonly IServiceScopeFactory scopeFactory;
-        private readonly ILogger<NextDeparturesService> logger;
+        private readonly ILogger<CollectorService> logger;
 
-        public NextDeparturesService(
+        public CollectorService(
             IServiceScopeFactory scopeFactory,
-            ILogger<NextDeparturesService> logger)
+            ILogger<CollectorService> logger)
         {
             this.scopeFactory = scopeFactory;
             this.logger = logger;
@@ -26,7 +26,7 @@ namespace B_Q01.BackgroundServices
         {
             await DoWork();
 
-            using PeriodicTimer timer = new(TimeSpan.FromSeconds(10));
+            using PeriodicTimer timer = new(TimeSpan.FromSeconds(60));
             try
             {
                 while (await timer.WaitForNextTickAsync(cancellationToken))
@@ -74,6 +74,16 @@ namespace B_Q01.BackgroundServices
 
             var delCount = departuresService.DeletePastDepartures();
             logger.LogInformation("Removed {count} past departures", delCount);
+        }
+
+        private HttpClient CreateClient()
+        {
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            client.BaseAddress = new Uri("http://xmlopen.rejseplanen.dk/bin/rest.exe/");
+
+            return client;
         }
     }
 }
