@@ -11,7 +11,7 @@ namespace B_Q01.Converters
             Type typeToConvert,
             JsonSerializerOptions options) =>
                 DateTimeOffset.ParseExact(reader.GetString()!,
-                    "dd.MM.yy", new CultureInfo("en-DK"));
+                    "yyyy-MM-dd", new CultureInfo("en-DK"));
 
         public override void Write(
             Utf8JsonWriter writer,

@@ -47,23 +47,21 @@ namespace B_Q01.BackgroundServices
 
             Console.WriteLine("Departures in db: " + departuresService.GetAll().Count);
 
-            using HttpClient client = new();
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            using HttpClient client = CreateClient();
 
             var currentDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
                 TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time"));
-            var dateString = string.Join(".", currentDate.ToString("dd"), currentDate.ToString("MM"), currentDate.ToString("yy"));
+            var dateString = string.Join("-", currentDate.ToString("yyyy"), currentDate.ToString("MM"), currentDate.ToString("dd"));
 
-            var stopId = 0; //Get ID from stops table
+            var stopId = 28002; //Get ID from stops table
 
-            var res = await client.GetStringAsync("http://xmlopen.rejseplanen.dk/bin/rest.exe/departureBoard?id=2753&date=" + dateString + "&offsetTime=0&format=json");
+            var res = await client.GetStringAsync($"departureBoard?id={stopId}&date={dateString}&offsetTime=0");
             if (res == null || res.Equals(string.Empty))
             {
                 logger.LogWarning("API response null");
                 return;
             }
-            var board = JsonNode.Parse(res)?["DepartureBoard"]?["Departure"]?.ToString();
+            var board = JsonNode.Parse(res)?["Departure"]?.ToString();
 
             List<Departure> nextDepartures = new List<Departure>();
             if (board != null)
@@ -83,7 +81,8 @@ namespace B_Q01.BackgroundServices
             var client = new HttpClient();
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            client.BaseAddress = new Uri("http://xmlopen.rejseplanen.dk/bin/rest.exe/");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "5067f9fa-acd4-4161-954f-e49db5fa5620");
+            client.BaseAddress = new Uri("http://rejseplanen.dk/api/");
 
             return client;
         }

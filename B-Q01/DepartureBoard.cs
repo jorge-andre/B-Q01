@@ -1,23 +1,30 @@
 ﻿using B_Q01.Converters;
+using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 
 namespace B_Q01
 {
-    public class DepartureBoard 
+    public class Product
     {
-        [property: JsonPropertyName("Departure")]
-        public List<Departure>? Departures { get; set; }
+        [property: JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [property: JsonPropertyName("displayNumber")]
+        public string DisplayNumber { get; set; }
+
+        [property: JsonPropertyName("line")]
+        public string Line { get; set; }
+
+        [property: JsonPropertyName("catOut")]
+        public string Type { get; set; }
     }
 
     public class Departure 
     {
         public int Id { get; set; }
 
-        [property: JsonPropertyName("type")]
-        public string Type { get; set; }
-
-        [property: JsonPropertyName("line")]
-        public string Line { get; set; }
+        [property: JsonPropertyName("ProductAtStop")]
+        public Product Product { get; set; }
 
         [property: JsonPropertyName("stop")]
         public string Stop { get; set; }
@@ -61,8 +68,8 @@ namespace B_Q01
             else
             {
                 Departure other = (Departure)obj;
-                return Type.Equals(other.Type) &&
-                    Line.Equals(other.Line) &&
+                return Product.Type.Equals(other.Product.Type) &&
+                    Product.Line.Equals(other.Product.Line) &&
                     Stop.Equals(other.Stop) &&
                     Direction.Equals(other.Direction) &&
                     Date.Equals(other.Date) &&
@@ -72,7 +79,7 @@ namespace B_Q01
 
         public override int GetHashCode()
         {
-            var stringToHash = string.Join("-", Type, Line, Stop, Direction, Date, Time);
+            var stringToHash = string.Join("-", Product.Type, Product.Line, Stop, Direction, Date, Time);
             return stringToHash.GetHashCode();
         }
     }

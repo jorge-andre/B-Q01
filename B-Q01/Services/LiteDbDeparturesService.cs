@@ -26,8 +26,8 @@ namespace B_Q01.Services
         public bool AddOrUpdateDeparture(Departure departure)
         {
             var col = db.GetCollection<Departure>("Departure");
-            var dep = col.FindOne(x => x.Type == departure.Type
-                && x.Line == departure.Line
+            var dep = col.FindOne(x => x.Product.Type == departure.Product.Type
+                && x.Product.Line == departure.Product.Line
                 && x.Direction == departure.Direction
                 && x.Date == departure.Date
                 && x.Time == departure.Time);
