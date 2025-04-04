@@ -22,10 +22,8 @@ namespace B_Q01.Kafka
 
         public KafkaClientHandle(IConfiguration config)
         {
-            var conf = new ProducerConfig
-            {
-                BootstrapServers = "localhost:9092"
-            };
+            var conf = config.GetSection("KafkaProducer").Get<ProducerConfig>();
+
             this.kafkaProducer = new ProducerBuilder<byte[], byte[]>(conf).Build();
         }
 

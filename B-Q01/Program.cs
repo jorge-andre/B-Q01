@@ -22,14 +22,9 @@ builder.Services.AddHostedService<DepartureAlertService>();
 builder.Services.AddLogging();
 builder.Logging.AddConsole();
 
-// Kafka setup
-
-const string topic = "departures";
-
-var producerConfig = new ProducerConfig
-{
-    BootstrapServers = "localhost:9092"
-};
+IConfiguration config = new ConfigurationBuilder()
+    .AddJsonFile("./appsettings.json")
+    .Build();
 
 var host = builder.Build();
 

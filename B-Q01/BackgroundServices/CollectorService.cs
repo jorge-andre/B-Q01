@@ -55,7 +55,7 @@ namespace B_Q01.BackgroundServices
 
             var stopId = 28002; //Get ID from stops table
 
-            var res = await client.GetStringAsync($"departureBoard?id={stopId}&date={dateString}&offsetTime=0");
+            var res = await client.GetStringAsync($"departureBoard?id={stopId}&date={dateString}");
             if (res == null || res.Equals(string.Empty))
             {
                 logger.LogWarning("API response null");
