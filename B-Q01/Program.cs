@@ -23,7 +23,8 @@ builder.Services.AddLogging();
 builder.Logging.AddConsole();
 
 IConfiguration config = new ConfigurationBuilder()
-    .AddJsonFile("./appsettings.json")
+    .SetBasePath(Environment.CurrentDirectory)
+    .AddJsonFile("appsettings.json")
     .Build();
 
 var host = builder.Build();

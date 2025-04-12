@@ -1,4 +1,5 @@
 ﻿using B_Q01.Services.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -13,13 +14,18 @@ namespace B_Q01.BackgroundServices
     {
         private readonly IServiceScopeFactory scopeFactory;
         private readonly ILogger<CollectorService> logger;
+        private readonly string stopId;
+        private readonly string apiKey;
 
         public CollectorService(
             IServiceScopeFactory scopeFactory,
+            IConfiguration config,
             ILogger<CollectorService> logger)
         {
             this.scopeFactory = scopeFactory;
             this.logger = logger;
+            this.stopId = config.GetValue<string>("Rejseplanen:Stops");
+            this.apiKey = config.GetValue<string>("Rejseplanen:ApiKey");
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -53,8 +59,6 @@ namespace B_Q01.BackgroundServices
                 TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time"));
             var dateString = string.Join("-", currentDate.ToString("yyyy"), currentDate.ToString("MM"), currentDate.ToString("dd"));
 
-            var stopId = 28002; //Get ID from stops table
-
             var res = await client.GetStringAsync($"departureBoard?id={stopId}&date={dateString}");
             if (res == null || res.Equals(string.Empty))
             {
@@ -81,7 +85,7 @@ namespace B_Q01.BackgroundServices
             var client = new HttpClient();
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "5067f9fa-acd4-4161-954f-e49db5fa5620");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
             client.BaseAddress = new Uri("http://rejseplanen.dk/api/");
 
             return client;

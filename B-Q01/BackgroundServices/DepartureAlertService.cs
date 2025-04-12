@@ -72,7 +72,7 @@ namespace B_Q01.BackgroundServices
 
                 var topic = stop.KafkaTopic;
 
-                var result = await producer.ProduceAsync(topic, message);
+                var result = await producer.ProduceAsync("departures", message);
 
                 lastSentDeparture = nextDeparture;
                 Console.WriteLine(result.Value);
