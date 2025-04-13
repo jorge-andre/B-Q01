@@ -56,7 +56,7 @@ namespace B_Q01.BackgroundServices
             using HttpClient client = CreateClient();
 
             var currentDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
-                TimeZoneInfo.FindSystemTimeZoneById("Romance Standard Time"));
+                TimeZoneInfo.FindSystemTimeZoneById("Europe/Copenhagen"));
             var dateString = string.Join("-", currentDate.ToString("yyyy"), currentDate.ToString("MM"), currentDate.ToString("dd"));
 
             var res = await client.GetStringAsync($"departureBoard?id={stopId}&date={dateString}");
